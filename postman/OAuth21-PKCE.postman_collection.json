@@ -1,0 +1,224 @@
+{
+  "info": {
+    "name": "OAuth 2.1 + PKCE - Alkemy Java 2",
+    "description": "Authorization Code + PKCE contra el Authorization Server local.\n1. Pestaña Authorization de la colección > Get New Access Token.\n2. Login: alumno/alumno123 o profe/profe123.\n3. Use Token y ejecutar los requests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "oauth2",
+    "oauth2": [
+      {
+        "key": "grant_type",
+        "value": "authorization_code_with_pkce",
+        "type": "string"
+      },
+      {
+        "key": "authUrl",
+        "value": "{{baseUrl}}/oauth2/authorize",
+        "type": "string"
+      },
+      {
+        "key": "accessTokenUrl",
+        "value": "{{baseUrl}}/oauth2/token",
+        "type": "string"
+      },
+      {
+        "key": "clientId",
+        "value": "postman-client",
+        "type": "string"
+      },
+      {
+        "key": "client_authentication",
+        "value": "body",
+        "type": "string"
+      },
+      {
+        "key": "redirect_uri",
+        "value": "https://oauth.pstmn.io/v1/callback",
+        "type": "string"
+      },
+      {
+        "key": "useBrowser",
+        "value": false,
+        "type": "boolean"
+      },
+      {
+        "key": "scope",
+        "value": "openid profile api.read",
+        "type": "string"
+      },
+      {
+        "key": "challengeAlgorithm",
+        "value": "S256",
+        "type": "string"
+      },
+      {
+        "key": "state",
+        "value": "{{$randomUUID}}",
+        "type": "string"
+      },
+      {
+        "key": "tokenName",
+        "value": "token-oauth21",
+        "type": "string"
+      },
+      {
+        "key": "addTokenTo",
+        "value": "header",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    }
+  ],
+  "item": [
+    {
+      "name": "Descubrimiento (sin token)",
+      "item": [
+        {
+          "name": "OpenID configuration",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/.well-known/openid-configuration",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                ".well-known",
+                "openid-configuration"
+              ]
+            },
+            "description": "Metadatos del servidor: endpoints, scopes y code_challenge_methods_supported=S256.",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "JWKS (claves públicas)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/oauth2/jwks",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "oauth2",
+                "jwks"
+              ]
+            },
+            "description": "Clave pública para validar la firma de los JWT.",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        },
+        {
+          "name": "Endpoint público",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/publico",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "publico"
+              ]
+            },
+            "description": "No requiere token.",
+            "auth": {
+              "type": "noauth"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "API protegida (Bearer)",
+      "item": [
+        {
+          "name": "Mi perfil (claims del token)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/me",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "me"
+              ]
+            },
+            "description": "Devuelve usuario, scopes y roles del access token."
+          }
+        },
+        {
+          "name": "Saludos (scope api.read)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/saludos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "saludos"
+              ]
+            },
+            "description": "403 si el token no tiene el scope api.read."
+          }
+        },
+        {
+          "name": "Admin (rol ADMIN)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/admin",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "api",
+                "admin"
+              ]
+            },
+            "description": "200 con profe, 403 con alumno."
+          }
+        },
+        {
+          "name": "OIDC userinfo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/userinfo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "userinfo"
+              ]
+            },
+            "description": "Endpoint OIDC: datos del usuario (scope openid)."
+          }
+        }
+      ]
+    }
+  ]
+}
